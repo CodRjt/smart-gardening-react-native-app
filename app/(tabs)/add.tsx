@@ -19,6 +19,8 @@ export default function Add() {
   const [url, setUrl] = useState<string>("")
   const [serialError, setSerialError] = useState<string>("")
   const [error, setError] = useState<string>("")
+  const [nameError, setNameError] = useState<string>("")
+  const [speciesError, setSpeciesError] = useState<string>("")
   const theme = useTheme()
   const [imageUri,setImageUri]=useState<string|null>(null)
   const handleSubmit = async () => {
@@ -37,7 +39,7 @@ export default function Add() {
           plant_desc: description,
           Plant_zone: zone,
           plant_sno: serial,
-          watering_interval_in_days: interval,
+          watering_duration_in_min: interval,
           url: imageUri? imageUri:url,
           Day_of_entry: new Date().toISOString(),
           last_watered: now
@@ -109,7 +111,9 @@ export default function Add() {
         value={name}
         onChangeText={setName}
         style={{ marginBottom: 16 }}
+        
       />
+      {!name && <Text style={{ color: "red" }}>Name is a required field</Text>}
       <TextInput
         label="Species"
         placeholder="Enter the plant species"
@@ -117,6 +121,7 @@ export default function Add() {
         onChangeText={setSpecies}
         style={{ marginBottom: 16 }}
       />
+      {!species && <Text style={{ color: "red" }}>Species is a required field</Text>}
       <TextInput
         label="Description"
         placeholder="Enter plant description"
@@ -175,7 +180,7 @@ export default function Add() {
         </TouchableOpacity>
         </View>
       )}
-     {!serialError && <Button mode="contained" style={{marginTop:10}} onPress={handleSubmit} >
+     {name && species && !serialError && <Button mode="contained" style={{marginTop:10}} onPress={handleSubmit} >
         Add Plant
       </Button>
 }

@@ -7,6 +7,7 @@ export default function TabsLayout() {
   <Tabs  >
     <Tabs.Screen name="index" options={{title: 'My Garden' , tabBarIcon: ()=><MaterialCommunityIcons name="flower" size={24} color="black" />}}  />
     <Tabs.Screen name="add" options={{title: 'Add plant' , tabBarIcon: ()=><Ionicons name="add-circle" size={24} color="black" />}} />
+    <Tabs.Screen name="initializeIp" options={{title: 'Initialize IP ' , tabBarIcon: ()=><Ionicons name="settings" size={24} color="black" />}} />
   </Tabs>
     );
 }

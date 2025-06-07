@@ -8,7 +8,7 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoadingUser } = useAuth();
   const router = useRouter();
   const segments = useSegments();
-
+  
   useEffect(() => {
     if (!isLoadingUser && !user) {
       router.replace("/auth");
