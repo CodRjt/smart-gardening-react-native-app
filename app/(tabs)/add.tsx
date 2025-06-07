@@ -7,6 +7,7 @@ import { ID, Query } from "react-native-appwrite";
 import * as ImagePicker from 'expo-image-picker'
 import { TextInput, Text, Button, useTheme } from "react-native-paper"; // Import TextInput from react-native-paper
 import { AntDesign } from "@expo/vector-icons";
+import { ScrollView } from "react-native-gesture-handler";
 export default function Add() {
   const router = useRouter()
   const { user } = useAuth()
@@ -104,6 +105,7 @@ export default function Add() {
 
 
   return (
+    <ScrollView showsVerticalScrollIndicator={false}>
     <View style={styles.container}>
       <TextInput
         label="Name"
@@ -186,6 +188,7 @@ export default function Add() {
 }
       {error && <Text style={{ color: theme.colors.error }}>{error}</Text>}
     </View>
+</ScrollView>
   );
 }
 const styles = StyleSheet.create({
