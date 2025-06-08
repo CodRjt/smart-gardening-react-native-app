@@ -24,7 +24,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
-import { io } from "socket.io-client"; // Importing socket.io client
+
 // Assuming you have a useAuth hook to handle authentication
 const styles = StyleSheet.create({
   container: {
@@ -321,30 +321,7 @@ export default function Index() {
     return wateredZone?.includes(Number(zone));
   };
 
-  const [lastHeartbeat, setLastHeartBeat] = useState(Date.now());
-
-  const socket = io(`http://${Ip}:5000`);
-  socket.on("heartbeat", () => {
-    setLastHeartBeat(Date.now());
-    console.log("last Heartbear:" + lastHeartbeat);
-  });
-
-  useEffect(() => {
-    if (!system) return;
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-
-      console.log("now" + now);
-
-      if (now - lastHeartbeat > 15000) {
-        activate();
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [system, lastHeartbeat]);
-
+ 
   const activate = async () => {
     if (!system) {
       if (!Ip) {
