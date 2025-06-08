@@ -7,17 +7,11 @@ import {
 } from "@/lib/appwrite";
 
 import { useAuth } from "@/lib/auth-context"; // Adjust the import path as necessary
-
 import { plant, zone } from "@/types/types";
-
 import { MaterialCommunityIcons } from "@expo/vector-icons"; // Importing MaterialCommunityIcons
-
 import AntDesign from "@expo/vector-icons/AntDesign";
-
 import { router } from "expo-router";
-
 import { act, useEffect, useRef, useState } from "react";
-
 import {
   Image,
   ScrollView,
@@ -25,252 +19,148 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { Query } from "react-native-appwrite";
-
 import { Swipeable } from "react-native-gesture-handler";
-
 import { Button, Surface, Text, useTheme } from "react-native-paper";
-
 import { useLocalSearchParams } from "expo-router";
-
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
-
 import { io } from "socket.io-client"; // Importing socket.io client
-
 // Assuming you have a useAuth hook to handle authentication
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   cardCompleted: {
     marginTop: 14,
-
     marginBottom: 5,
-
     borderRadius: 13,
-
     backgroundColor: "#f2f6fa",
-
     shadowColor: "#000",
-
     shadowOffset: { width: 0, height: 2 },
-
     shadowOpacity: 1,
-
     shadowRadius: 13,
-
     elevation: 8,
-
     borderColor: "#87ceeb",
-
     borderWidth: 2,
   },
-
   card: {
     marginTop: 14,
-
     marginBottom: 5,
-
     borderRadius: 13,
-
     backgroundColor: "#f2f6fa",
-
     shadowColor: "#000",
-
     shadowOffset: { width: 0, height: 2 },
-
     shadowOpacity: 1,
-
     shadowRadius: 13,
-
     elevation: 8,
   },
-
   emptyState: {
     flex: 1,
-
     justifyContent: "center",
-
     alignItems: "center",
-
     padding: 32,
-
     backgroundColor: "#f9fafb",
-
     borderRadius: 16,
-
     margin: 24,
-
     minHeight: 180,
-
     shadowColor: "#000",
-
     shadowOffset: { width: 0, height: 2 },
-
     shadowOpacity: 0.06,
-
     shadowRadius: 8,
-
     elevation: 2,
   },
-
   emptyStateText: {
     fontWeight: "bold",
-
     color: "#90a4ae",
-
     fontSize: 20,
-
     textAlign: "center",
-
     marginTop: 8,
-
     letterSpacing: 0.5,
   },
-
   cardContent: {
     padding: 18,
   },
-
   header: {
     width: "100%",
-
     flexDirection: "row",
-
     justifyContent: "space-between",
-
     alignItems: "center",
-
     marginBottom: 12,
   },
-
   cardTitle: {
     color: "brown",
-
     fontWeight: "bold",
-
     fontSize: 22,
-
     marginBottom: 15,
   },
-
   cardSubtitle: {
     color: "#4e8d7c",
-
     fontSize: 16,
-
     marginBottom: 8,
   },
-
   cardDesc: {
     color: "#6c6c80",
-
     fontSize: 16,
-
     marginBottom: 12,
   },
-
   cardRow: {
     flexDirection: "row",
-
     justifyContent: "space-between",
-
     marginBottom: 8,
   },
-
   cardLabel: {
     color: "red",
-
     fontWeight: "bold",
   },
-
   cardValue: {
     color: "black",
   },
-
   buttonArray: {
     flexDirection: "row",
-
     gap: 8,
-
     // justifyContent:""
   },
-
   leftAction: {
     flex: 1,
-
     backgroundColor: "red",
-
     justifyContent: "center",
-
     padding: 15,
-
     borderRadius: 15,
-
     marginTop: 22,
-
     marginBottom: 22,
   },
-
   rightAction: {
     flex: 1,
-
     backgroundColor: "green",
-
     justifyContent: "center",
-
     padding: 15,
-
     borderRadius: 15,
-
     marginTop: 22,
-
     alignItems: "flex-end",
-
     marginBottom: 22,
   },
-
   cardHeader: {
-    flex: 1,
-
     flexDirection: "row",
-
     justifyContent: "space-between",
   },
 });
-
 export default function Index() {
   const { user, signout } = useAuth();
-
   const [plant, setPlant] = useState<plant[]>();
-
   const [wateredZone, setWateredZone] = useState<number[]>();
-
   const [system, setSystem] = useState<boolean>(false);
-
   const theme = useTheme();
-
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-
   const [selectedZone, setSelectedZone] = useState<number>(0);
-
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
-
   const { ip: Ip } = useLocalSearchParams<{ ip: string }>();
-
   const fetchPlant = async () => {
     try {
       const response = await databases.listDocuments(
         DATABASE_ID,
-
         COLLECTION_ID,
-
         [Query.equal("user_id", user?.$id ?? "")]
       );
-
       setPlant(response.documents as plant[]);
     } catch (error) {
       console.error(error);
@@ -279,26 +169,18 @@ export default function Index() {
 
   const fetchPlantToday = async () => {
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
-
     const todayISO = today.toISOString();
-
     try {
       const respons = await databases.listDocuments(
         DATABASE_ID,
-
         WATERING_ID,
-
         [
           Query.equal("user_id", user?.$id ?? ""),
-
           Query.greaterThan("last_watered", todayISO),
         ]
       );
-
       const watered = respons.documents as zone[];
-
       setWateredZone(watered.map((zone) => zone.zone_id));
     } catch (error) {
       console.error(error);
@@ -313,14 +195,11 @@ export default function Index() {
       setSelectedZone(0);
     }
   }, [plant, selectedZone]);
-
   useEffect(() => {
     if (user) {
       const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
-
       const plantSubscription = client.subscribe(
         channel,
-
         (response) => {
           if (
             response.events.includes(
@@ -348,7 +227,6 @@ export default function Index() {
 
       const wateredSubscription = client.subscribe(
         wateredChannel,
-
         (wateredResponse) => {
           if (
             wateredResponse.events.includes(
@@ -361,12 +239,10 @@ export default function Index() {
       );
 
       fetchPlant();
-
       fetchPlantToday();
 
       return () => {
         plantSubscription();
-
         wateredSubscription();
       };
     }
@@ -448,10 +324,8 @@ export default function Index() {
   const [lastHeartbeat, setLastHeartBeat] = useState(Date.now());
 
   const socket = io(`http://${Ip}:5000`);
-
   socket.on("heartbeat", () => {
     setLastHeartBeat(Date.now());
-
     console.log("last Heartbear:" + lastHeartbeat);
   });
 
@@ -477,20 +351,16 @@ export default function Index() {
         // If IP is missing, navigate to set it
 
         router.replace("/initializeIp");
-
         console.log(Ip);
-
         return; // Don't proceed with the fetch until IP is set
       }
 
       try {
         const response = await fetch(`http://${Ip}:5000/set_user`, {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             user_id: user?.$id,
           }),
@@ -504,16 +374,13 @@ export default function Index() {
       try {
         const response = await fetch(`http://${Ip}:5000/set_user`, {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             user_id: "",
           }),
         });
-
         setSystem((prev) => !prev);
       } catch (error) {
         console.error(error);
@@ -531,20 +398,15 @@ export default function Index() {
     try {
       const response = await fetch(`http://${Ip}:5000/water_zone`, {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json", // <-- Crucial header!
         },
 
         body: JSON.stringify({
           // <-- The JSON data sent in the request body
-
           user_id: user?.$id,
-
           zone_id: zoneId,
-
           duration_minutes: durationMinutes,
-
           plants_in_zone: plantsInZone,
         }),
       });
@@ -553,11 +415,9 @@ export default function Index() {
 
       if (response.ok) {
         console.log("Watering request successful:", data);
-
         // Update UI with success message
       } else {
         console.error("Watering request failed:", data.message);
-
         // Show error message
       }
     } catch (error) {
@@ -728,31 +588,24 @@ export default function Index() {
                         <>
                           <View style={styles.cardRow}>
                             <Text style={styles.cardLabel}>Zone:</Text>
-
                             <Text style={styles.cardValue}>{p.Plant_zone}</Text>
                           </View>
 
                           <View style={styles.cardRow}>
                             <Text style={styles.cardLabel}>Serial no:</Text>
-
                             <Text style={styles.cardValue}> {p.plant_sno}</Text>
                           </View>
 
                           <View style={styles.cardRow}>
                             <Text style={styles.cardLabel}>Last Watered:</Text>
-
                             <Text style={styles.cardValue}>
                               {new Date(p.last_watered).toLocaleDateString(
                                 undefined,
                                 {
                                   year: "numeric",
-
                                   month: "short",
-
                                   day: "numeric",
-
                                   hour: "2-digit",
-
                                   minute: "2-digit",
                                 }
                               )}
@@ -761,7 +614,6 @@ export default function Index() {
 
                           <View style={styles.cardRow}>
                             <Text style={styles.cardLabel}>Day of Entry:</Text>
-
                             <Text style={styles.cardValue}>
                               {new Date(p.Day_of_entry).toLocaleDateString()}
                             </Text>
