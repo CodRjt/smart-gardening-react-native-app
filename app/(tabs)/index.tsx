@@ -5,15 +5,13 @@ import {
   databases,
   WATERING_ID,
 } from "@/lib/appwrite";
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-
 import { useAuth } from "@/lib/auth-context"; // Adjust the import path as necessary
 import { plant, zone } from "@/types/types";
 import { MaterialCommunityIcons } from "@expo/vector-icons"; // Importing MaterialCommunityIcons
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
 import { act, useEffect, useRef, useState } from "react";
+import * as Notifications from 'expo-notifications'
 import {
   Image,
   ScrollView,
@@ -21,6 +19,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { Query } from "react-native-appwrite";
 import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
@@ -188,7 +188,22 @@ export default function Index() {
       console.error(error);
     }
   };
-
+  useEffect(() =>{
+    const subscription=Notifications.addNotificationReceivedListener(() =>{
+      console.log("message received server likely dead");
+      activate()
+    })
+    return ()=>{
+      subscription.remove();
+    }
+  },[])
+  useFocusEffect(
+    useCallback(()=>{
+      fetchPlant();
+      fetchPlantToday();
+      return ()=>{};
+    },[user,Ip])
+  )
   useEffect(() => {
     if (
       selectedZone !== 0 &&
@@ -197,15 +212,6 @@ export default function Index() {
       setSelectedZone(0);
     }
   }, [plant, selectedZone]);
-  useFocusEffect(
-  useCallback(() => {
-    fetchPlant();
-    fetchPlantToday();
-
-    return () => {
-    };
-  }, [user, Ip])  // re-subscribe if user or Ip changes
-);
   useEffect(() => {
     if (user) {
       const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;

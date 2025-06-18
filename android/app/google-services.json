@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "79962101079",
+    "project_id": "serverdeathcry",
+    "storage_bucket": "serverdeathcry.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:79962101079:android:1feb35fa1f2e41c51d9a12",
+        "android_client_info": {
+          "package_name": "com.arjit_sharma.reactnativeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuXWUIrGjZ7fyVNE5VnuHDc6h4RDhfCsA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
