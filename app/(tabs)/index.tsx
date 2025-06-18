@@ -5,6 +5,8 @@ import {
   databases,
   WATERING_ID,
 } from "@/lib/appwrite";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 import { useAuth } from "@/lib/auth-context"; // Adjust the import path as necessary
 import { plant, zone } from "@/types/types";
@@ -195,6 +197,15 @@ export default function Index() {
       setSelectedZone(0);
     }
   }, [plant, selectedZone]);
+  useFocusEffect(
+  useCallback(() => {
+    fetchPlant();
+    fetchPlantToday();
+
+    return () => {
+    };
+  }, [user, Ip])  // re-subscribe if user or Ip changes
+);
   useEffect(() => {
     if (user) {
       const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
