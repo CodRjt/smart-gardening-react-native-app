@@ -17,3 +17,10 @@ export interface zone extends Models.Document{
     zone_id:number;
     last_watered:string;
 }
+export interface report extends Models.Document{
+    user_id:string;
+    Zone:number;
+    Report_time:string;
+    status:string;
+    confidence:number;
+}

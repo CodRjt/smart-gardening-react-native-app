@@ -4,12 +4,13 @@ import {
   DATABASE_ID,
   databases,
   WATERING_ID,
+  REPORT_ID
 } from "@/lib/appwrite";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { useAuth } from "@/lib/auth-context"; // Adjust the import path as necessary
-import { plant, zone } from "@/types/types";
+import { plant, zone,report } from "@/types/types";
 import { MaterialCommunityIcons } from "@expo/vector-icons"; // Importing MaterialCommunityIcons
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
@@ -114,6 +115,10 @@ const styles = StyleSheet.create({
     color: "red",
     fontWeight: "bold",
   },
+  ReportCardLabel: {
+    color: "black",
+    fontWeight: "bold",
+  },
   cardValue: {
     color: "black",
   },
@@ -149,13 +154,17 @@ const styles = StyleSheet.create({
 export default function Index() {
   const { user, signout } = useAuth();
   const [plant, setPlant] = useState<plant[]>();
+  const [report,setReport]=useState<report| null>(null);
   const [wateredZone, setWateredZone] = useState<number[]>();
   const [system, setSystem] = useState<boolean>(false);
   const theme = useTheme();
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedZone, setSelectedZone] = useState<number>(0);
+  const [showReport,setShowReport]=useState<boolean>(false)
+  const [reportIndicator,setReportIndicator]=useState<boolean>(true)
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
   const { ip: Ip } = useLocalSearchParams<{ ip: string }>();
+  
   const fetchPlant = async () => {
     try {
       const response = await databases.listDocuments(
@@ -188,6 +197,32 @@ export default function Index() {
       console.error(error);
     }
   };
+  const fetchReport=async ()=>{
+    try{
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        REPORT_ID,
+        [
+          Query.equal("user_id",user?.$id??""),
+          Query.equal("zone_id",selectedZone),
+          Query.orderDesc("report_time"),
+          Query.limit(1)
+        ]
+      )
+      const reportList=response.documents as report[];
+      if (reportList.length>0){
+        setReport(reportList[0])
+      }
+      else{
+        setReport(null)
+      }
+      
+      
+      
+    }catch (error){
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
     if (
@@ -197,6 +232,13 @@ export default function Index() {
       setSelectedZone(0);
     }
   }, [plant, selectedZone]);
+ 
+  useEffect(()=>{
+    if (user && selectedZone!==0){
+      fetchReport()
+    }
+    setReportIndicator(true)
+  },[selectedZone,user])
   useFocusEffect(
   useCallback(() => {
     fetchPlant();
@@ -206,6 +248,7 @@ export default function Index() {
     };
   }, [user, Ip])  // re-subscribe if user or Ip changes
 );
+
   useEffect(() => {
     if (user) {
       const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
@@ -486,7 +529,54 @@ export default function Index() {
               ))}
             </View>
           </ScrollView>
-
+              {selectedZone!==0 && reportIndicator && <View style={{backgroundColor:"#E0F7FA"}}>
+              <TouchableOpacity 
+              onPress={()=>setShowReport(prev=>!prev)}
+              style={{paddingVertical:8}}
+              >
+                <View style={styles.cardRow}>
+                <Text style={{color:report?(report.status!=="healthy"? "red":"black"):"black" , fontWeight:"bold"}}>
+                  {showReport?(<><MaterialCommunityIcons 
+                                  name="arrow-up-drop-circle" 
+                                  size={12}/>
+                                   "Hide Report"</>):
+                                   (<><MaterialCommunityIcons 
+                                   name="arrow-down-drop-circle" 
+                                   size={12} /> Show Report</>)
+                                   }
+                </Text>
+                <TouchableOpacity onPress={()=>setReportIndicator(false)}><AntDesign name="close" size={20} color="black"/></TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+              
+              {showReport && (
+                <>
+                  <View style={styles.cardRow}>
+                    <Text style={styles.ReportCardLabel}>Status:</Text>
+                    <Text style={styles.cardValue}>{report?.status}</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Text style={styles.ReportCardLabel}>Confidence:</Text>
+                    <Text style={styles.cardValue}>{report?.confidence.toFixed(3)}</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Text style={styles.ReportCardLabel}>Checked at :</Text>
+                    <Text style={styles.cardValue}>
+                              {report?.report_time? new Date(report?.report_time).toLocaleDateString(
+                                undefined,
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              ): "Not reported yet"}
+                            </Text>
+                  </View>
+                </>
+              )}
+              </View>}
           {filteredPlant?.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateText}>
