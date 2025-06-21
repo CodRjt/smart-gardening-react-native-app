@@ -9,9 +9,9 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { useAuth } from "@/lib/auth-context"; // Adjust the import path as necessary
+import { useAuth } from "@/lib/auth-context"; 
 import { plant, zone,report } from "@/types/types";
-import { MaterialCommunityIcons } from "@expo/vector-icons"; // Importing MaterialCommunityIcons
+import { MaterialCommunityIcons } from "@expo/vector-icons"; 
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
 import { act, useEffect, useRef, useState } from "react";
@@ -28,7 +28,6 @@ import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
-// Assuming you have a useAuth hook to handle authentication
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -150,6 +149,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  footer:{
+
+  }
 });
 export default function Index() {
   const { user, signout } = useAuth();
@@ -164,7 +166,13 @@ export default function Index() {
   const [reportIndicator,setReportIndicator]=useState<boolean>(true)
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
   const { ip: Ip } = useLocalSearchParams<{ ip: string }>();
-  
+  // const [Ip,setIp]=useState<string>('none')
+  // useEffect(()=>{
+  //   fetch('https://api64.ipify.org?format=json')
+  //   .then(response=>response.json())
+  //   .then(data=>setIp(data.ip))
+  //   .catch(err =>console.log(err))
+  // },[]);
   const fetchPlant = async () => {
     try {
       const response = await databases.listDocuments(
@@ -419,7 +427,6 @@ export default function Index() {
     }
   };
 
-  // In your React Native app (e.g., when a button is pressed)
 
   const triggerWatering = async (
     zoneId: number,
@@ -430,11 +437,10 @@ export default function Index() {
       const response = await fetch(`http://${Ip}:5000/water_zone`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // <-- Crucial header!
+          "Content-Type": "application/json", 
         },
 
         body: JSON.stringify({
-          // <-- The JSON data sent in the request body
           user_id: user?.$id,
           zone_id: zoneId,
           duration_minutes: durationMinutes,
@@ -456,9 +462,7 @@ export default function Index() {
     }
   };
 
-  // Call it, for example, when user taps a button:
 
-  // triggerWatering('zone1', 5);
 
   return (
     <View style={styles.container}>

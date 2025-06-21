@@ -24,3 +24,8 @@ export interface report extends Models.Document{
     status:string;
     confidence:number;
 }
+
+export interface ErrorInfo {
+    error:Error;
+    isFatal:boolean;
+}

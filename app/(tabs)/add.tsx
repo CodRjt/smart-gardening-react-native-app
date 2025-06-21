@@ -22,6 +22,7 @@ export default function Add() {
   const [error, setError] = useState<string>("")
   const [nameError, setNameError] = useState<string>("")
   const [speciesError, setSpeciesError] = useState<string>("")
+  
   const theme = useTheme()
   const [imageUri,setImageUri]=useState<string|null>(null)
   const handleSubmit = async () => {
@@ -106,24 +107,25 @@ export default function Add() {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
+      <View style={{alignItems:'flex-end'}}>
+      <Text style={{color:'pink'}}> * represets a required field</Text>
+      </View>
     <View style={styles.container}>
       <TextInput
-        label="Name"
+        label="Name *"
         placeholder="Enter plant name"
         value={name}
         onChangeText={setName}
         style={{ marginBottom: 16 }}
         
       />
-      {!name && <Text style={{ color: "red" }}>Name is a required field</Text>}
       <TextInput
-        label="Species"
+        label="Species *"
         placeholder="Enter the plant species"
         value={species}
         onChangeText={setSpecies}
         style={{ marginBottom: 16 }}
       />
-      {!species && <Text style={{ color: "red" }}>Species is a required field</Text>}
       <TextInput
         label="Description"
         placeholder="Enter plant description"
@@ -134,14 +136,14 @@ export default function Add() {
         style={{ marginBottom: 16 }}
       />
       <TextInput
-        label="Zone"
+        label="Zone *"
         placeholder="Enter plant zone (1-10)"
         value={zone ? zone.toString() : ""}
         onChangeText={text => setZone(Number(text))}
         style={{ marginBottom: 16 }}
       />
       <TextInput
-        label="Serial"
+        label="Serial *"
         placeholder="Enter Serial no of plant in the zone "
         value={serial ? serial.toString() : ""}
         onChangeText={async (text) => {
@@ -182,7 +184,7 @@ export default function Add() {
         </TouchableOpacity>
         </View>
       )}
-     {name && species && !serialError && <Button mode="contained" style={{marginTop:10}} onPress={handleSubmit} >
+     {name && species && zone && serial &&!serialError && <Button mode="contained" style={{marginTop:10}} onPress={handleSubmit} >
         Add Plant
       </Button>
 }
