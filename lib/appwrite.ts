@@ -1,4 +1,4 @@
-import { Account, Client, Databases} from 'react-native-appwrite';
+import { Account, Client, Databases,Storage} from 'react-native-appwrite';
 export let client = new Client()
     .setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!)
     .setProject(process.env.EXPO_PUBLIC_APPWRITE_PROJECT!)
@@ -10,6 +10,8 @@ export const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
 export const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID!;
 export const WATERING_ID=process.env.EXPO_PUBLIC_APPWRITE_WATERING_COLLECTION_ID!;
 export const REPORT_ID=process.env.EXPO_PUBLIC_APPWRITE_WATERING_REPORT_ID!;
+export const BUCKET_ID=process.env.EXPO_PUBLIC_APPWRITE_BUCKET_ID!;
+export const storage=new Storage(client);
 // export interface RealTimeProcess{
 //     events:string[];
 //     payloads:any

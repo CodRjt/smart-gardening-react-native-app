@@ -1,13 +1,14 @@
 import { COLLECTION_ID, DATABASE_ID, databases, WATERING_ID } from "@/lib/appwrite";
 import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { TouchableOpacity,StyleSheet, View,Image } from "react-native";
-import { ID, Query } from "react-native-appwrite";
-import * as ImagePicker from 'expo-image-picker'
-import { TextInput, Text, Button, useTheme } from "react-native-paper"; // Import TextInput from react-native-paper
 import { AntDesign } from "@expo/vector-icons";
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ID, Query } from "react-native-appwrite";
 import { ScrollView } from "react-native-gesture-handler";
+import { Button, Surface, Text, TextInput, useTheme } from "react-native-paper"; // Import TextInput from react-native-paper
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function Add() {
   const router = useRouter()
   const { user } = useAuth()
@@ -86,6 +87,7 @@ export default function Add() {
       });
       if (!result.canceled && result.assets && result.assets.length>0){
         setImageUri(result.assets[0].uri);
+        
       }
     }
   const isSerialUnique = async (num: number) => {
@@ -106,17 +108,22 @@ export default function Add() {
 
 
   return (
+    <SafeAreaView>
     <ScrollView showsVerticalScrollIndicator={false}>
+      <Text style={styles.title}>🌱 Add a New Plant</Text>
       <View style={{alignItems:'flex-end'}}>
-      <Text style={{color:'pink'}}> * represets a required field</Text>
+        <Text style={{color:'pink',marginBottom:0}}> * represets a required field</Text>
       </View>
+    <Surface style={styles.formCard}>
     <View style={styles.container}>
       <TextInput
         label="Name *"
         placeholder="Enter plant name"
         value={name}
         onChangeText={setName}
-        style={{ marginBottom: 16 }}
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
         
       />
       <TextInput
@@ -124,7 +131,9 @@ export default function Add() {
         placeholder="Enter the plant species"
         value={species}
         onChangeText={setSpecies}
-        style={{ marginBottom: 16 }}
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
       />
       <TextInput
         label="Description"
@@ -133,14 +142,18 @@ export default function Add() {
         value={description}
         onChangeText={setDesc}
         numberOfLines={4}
-        style={{ marginBottom: 16 }}
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
       />
       <TextInput
         label="Zone *"
         placeholder="Enter plant zone (1-10)"
         value={zone ? zone.toString() : ""}
         onChangeText={text => setZone(Number(text))}
-        style={{ marginBottom: 16 }}
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
       />
       <TextInput
         label="Serial *"
@@ -150,24 +163,29 @@ export default function Add() {
           await isSerialUnique(Number(text))
           setSerial(Number(text))
         }}
-        style={{ marginBottom: 16 }}
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
       />
       {serialError && <Text style={{ color: "red" }}> {serialError}</Text>}
      {serial===1 && <><TextInput
         label="watering_interval"
         placeholder="Enter watering duration in minutes"
-        style={{ marginBottom: 16 }}
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
         value={interval ? interval.toString() : ""}
         onChangeText={text => setInterval(Number(text))}
       />
       </>}
      {!imageUri  && <TextInput
         label="URL"
-        placeholder="Enter plant image URL"
+        placeholder="Enter plant image URL" 
         value={url}
         onChangeText={setUrl}
-        style={{ marginBottom: 16 }}
-
+        style={styles.input}
+        textColor="#222"
+        placeholderTextColor="#888"
       />}
       <Button onPress={pickImage}>or Pick a local Image </Button>
       {imageUri &&(
@@ -176,6 +194,7 @@ export default function Add() {
           source={{uri:imageUri}}
           style={{width:100,height:100,marginTop:10}}
           />
+
         <TouchableOpacity
           onPress={()=>setImageUri(null)}
           style={styles.button}
@@ -187,10 +206,12 @@ export default function Add() {
      {name && species && zone && serial &&!serialError && <Button mode="contained" style={{marginTop:10}} onPress={handleSubmit} >
         Add Plant
       </Button>
-}
+      }
       {error && <Text style={{ color: theme.colors.error }}>{error}</Text>}
     </View>
+    </Surface>
 </ScrollView>
+</SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -199,6 +220,12 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: "#f5f5f5"
   },
+  input: {
+  marginBottom: 18,
+  backgroundColor: "#fff",
+  borderRadius: 8,
+  color: "#222",
+},
   button:{
     position:"absolute",
     top:2,
@@ -207,6 +234,33 @@ const styles = StyleSheet.create({
     borderRadius:12,
     padding:2,
     zIndex:1,
+  },
+  formCard: {
+    margin: 16,
+    marginTop:1,
+    padding: 16,
+    borderRadius: 16,
+    elevation: 4,
+    backgroundColor:"#e8f5e9",
+    borderWidth:1,
+    borderColor:"#c8e6c9",
+  },
+  title:{
+    fontSize:24,
+    color:"#388e3c",
+    textAlign:"center",
+    marginBottom:8,
+    fontWeight:"bold",
+    borderBottomWidth:2,
+    borderBottomColor: "#a5d6a7",
+    letterSpacing:1,
+    textShadowColor:"rgba(60,120,60,0.15)",
+    textShadowRadius:4,
+    backgroundColor:"#e8f5e9",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
   }
+
 }
 )

@@ -1,36 +1,39 @@
 import {
   client,
+  storage,
   COLLECTION_ID,
   DATABASE_ID,
   databases,
   WATERING_ID,
-  REPORT_ID
+  REPORT_ID,
+  BUCKET_ID
 } from "@/lib/appwrite";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-
 import { useAuth } from "@/lib/auth-context"; 
 import { plant, zone,report } from "@/types/types";
 import { MaterialCommunityIcons } from "@expo/vector-icons"; 
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
-import { act, useEffect, useRef, useState } from "react";
+import {  useEffect, useRef, useState } from "react";
 import {
   Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
+  
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Query } from "react-native-appwrite";
 import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  
   },
   cardCompleted: {
     marginTop: 14,
@@ -88,6 +91,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    backgroundColor: "#f5f7fa",
+    paddingVertical: 12,
+    borderBottomWidth:1,
+    borderBottomColor: "#e0e0e0",
   },
   cardTitle: {
     color: "brown",
@@ -124,6 +131,8 @@ const styles = StyleSheet.create({
   buttonArray: {
     flexDirection: "row",
     gap: 8,
+    paddingVertical:8,
+    paddingHorizontal:8
     // justifyContent:""
   },
   leftAction: {
@@ -137,7 +146,7 @@ const styles = StyleSheet.create({
   },
   rightAction: {
     flex: 1,
-    backgroundColor: "green",
+    backgroundColor: "#4ac6e5",
     justifyContent: "center",
     padding: 15,
     borderRadius: 15,
@@ -151,10 +160,26 @@ const styles = StyleSheet.create({
   },
   footer:{
 
+  },
+  buttonWrapper:{
+    position:"relative",
+    marginBottom:10
+  },
+  reddot:{
+    width:8,
+    height:8,
+    borderRadius:5,
+    backgroundColor:"red",
+    position:"absolute",
+    top:1,
+    right:4,
+    zIndex:1,
   }
 });
 export default function Index() {
+  const [fileUrl,setFileUrl]=useState<string|null>(null) //change to null
   const { user, signout } = useAuth();
+  const [dangerZones,setDangerZones]=useState<number[]>()
   const [plant, setPlant] = useState<plant[]>();
   const [report,setReport]=useState<report| null>(null);
   const [wateredZone, setWateredZone] = useState<number[]>();
@@ -185,7 +210,19 @@ export default function Index() {
       console.error(error);
     }
   };
-
+  const IfFileExists=async(file_id:string)=>{
+    try{
+      const file=await storage.getFile(BUCKET_ID,file_id);
+      return true
+    }catch(err:any){
+      if(err.code===404){
+        console.log("file does not exists for ",file_id)
+        return false
+      }
+      console.log("some other error occureded while checking file validity",err)
+      return false
+    }
+  }
   const fetchPlantToday = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -201,6 +238,17 @@ export default function Index() {
       );
       const watered = respons.documents as zone[];
       setWateredZone(watered.map((zone) => zone.zone_id));
+      const dangerResponse = await databases.listDocuments(
+        DATABASE_ID,
+        REPORT_ID,
+        [
+          Query.equal("user_id", user?.$id ?? ""),
+          Query.equal("status", "possibly unhealthy"),
+        ]
+      );
+      const danger = dangerResponse.documents as zone[];
+      setDangerZones(danger.map((zone) => zone.zone_id));
+      
     } catch (error) {
       console.error(error);
     }
@@ -239,7 +287,29 @@ export default function Index() {
     ) {
       setSelectedZone(0);
     }
-  }, [plant, selectedZone]);
+    
+    const checkAndSetFileUrl=async ()=>{
+      if (selectedZone !==0 && user){
+      const file_id=`${user.$id}_${selectedZone}`;
+      const exists=await IfFileExists(file_id)
+      console.log(file_id)
+      const response=storage.getFileDownload(
+        BUCKET_ID,
+        file_id
+      )
+
+      if (!exists){
+        setFileUrl(null)
+        return
+      }
+      console.log(response)
+      setFileUrl(response.toString())
+      console.log(fileUrl);
+    }
+  }
+  checkAndSetFileUrl();
+    
+  }, [plant, selectedZone,user]);
  
   useEffect(()=>{
     if (user && selectedZone!==0){
@@ -345,12 +415,18 @@ export default function Index() {
     try {
       if (!user || wateredZone?.includes(Number(SelectedPlant?.Plant_zone)))
         return;
-
-      await triggerWatering(
+      else if (!Ip){
+        console.error("Plant cannot be watered without initialzing the IP")
+        return;
+      }
+      else{
+        await triggerWatering(
         SelectedPlant?.Plant_zone,
         RepPlant.watering_duration_in_min,
         plantsInZone
       );
+      }
+
     } catch (error) {
       console.log(error);
     }
@@ -361,12 +437,12 @@ export default function Index() {
       {isZoneWatered(zone) ? (
         <Text style={{ fontWeight: "bold", fontSize: 16 }}>
           {" "}
-          Watered! {"\n"} Today
+          Watered {"\n"} Today!!
         </Text>
       ) : (
         <MaterialCommunityIcons
-          name="check-circle-outline"
-          size={32}
+          name="watering-can"
+          size={64}
           color="#fff"
         />
       )}
@@ -388,7 +464,6 @@ export default function Index() {
     if (!system) {
       if (!Ip) {
         // If IP is missing, navigate to set it
-
         router.replace("/initializeIp");
         console.log(Ip);
         return; // Don't proceed with the fetch until IP is set
@@ -465,7 +540,7 @@ export default function Index() {
 
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top','left','right']}>
       <View style={styles.header}>
         <Text
           variant="headlineSmall"
@@ -522,14 +597,23 @@ export default function Index() {
               </Button>
 
               {zoneList.map((zone, key) => (
+                <View>
                 <Button
                   mode={zone === selectedZone ? "contained" : "outlined"}
                   onPress={() => setSelectedZone(zone)}
                   key={key}
                   style={{ height: 40 }}
+                  labelStyle={{
+                    color:zone===selectedZone?"#fff":"#4e8d7c",
+                    fontWeight:"bold"
+                  }}
                 >
                   {zone}
                 </Button>
+                  {dangerZones?.includes(zone)  && 
+                  <View style={styles.reddot}/>
+                  }
+                </View>
               ))}
             </View>
           </ScrollView>
@@ -542,8 +626,7 @@ export default function Index() {
                 <Text style={{color:report?(report.status!=="healthy"? "red":"black"):"black" , fontWeight:"bold"}}>
                   {showReport?(<><MaterialCommunityIcons 
                                   name="arrow-up-drop-circle" 
-                                  size={12}/>
-                                   "Hide Report"</>):
+                                  size={12}/> Hide Report</>):
                                    (<><MaterialCommunityIcons 
                                    name="arrow-down-drop-circle" 
                                    size={12} /> Show Report</>)
@@ -578,11 +661,21 @@ export default function Index() {
                               ): "Not reported yet"}
                             </Text>
                   </View>
+                  {fileUrl && (
+                    <View style={{ alignItems: "center" }}>
+                      <Image
+                        source={{ uri: fileUrl }}
+                        style={{ width: 100, height: 100,backgroundColor:"green" }}
+                      />
+                     
+                    </View>
+                  )}
                 </>
               )}
               </View>}
           {filteredPlant?.length === 0 ? (
             <View style={styles.emptyState}>
+              <MaterialCommunityIcons name="flower" size={48} color="#b2dfdb" />
               <Text style={styles.emptyStateText}>
                 No plants yet{"\n"} Add your first plant now{" "}
               </Text>
@@ -710,6 +803,6 @@ export default function Index() {
           )}
         </ScrollView>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
