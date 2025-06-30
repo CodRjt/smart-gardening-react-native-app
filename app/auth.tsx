@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/lib/auth-context"; // Adjust the import path as necessary
+import { useAuth } from "@/lib/auth-context"; 
 import { useRouter } from "expo-router";
 import { KeyboardAvoidingView, Platform,StyleSheet,Text} from "react-native";
 import { TextInput ,Button,useTheme} from "react-native-paper";
 export default function auth() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const theme = useTheme();
-    const {user,signin,signup} = useAuth(); // Assuming you have a useAuth hook to handle authentication
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Replace with your authentication logic
+    const {user,signin,signup} = useAuth(); 
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); 
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);

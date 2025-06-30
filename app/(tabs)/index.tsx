@@ -1,35 +1,36 @@
+//import all dependencies 
 import {
+  BUCKET_ID,
   client,
-  storage,
   COLLECTION_ID,
   DATABASE_ID,
   databases,
-  WATERING_ID,
   REPORT_ID,
-  BUCKET_ID
+  storage,
+  WATERING_ID
 } from "@/lib/appwrite";
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-import { useAuth } from "@/lib/auth-context"; 
-import { plant, zone,report } from "@/types/types";
-import { MaterialCommunityIcons } from "@expo/vector-icons"; 
+import { useAuth } from "@/lib/auth-context";
+import { plant, report, zone } from "@/types/types";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { router } from "expo-router";
-import {  useEffect, useRef, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
-  
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Query } from "react-native-appwrite";
 import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
-import { useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+
+
+//creating styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -158,14 +159,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  footer:{
-
-  },
   buttonWrapper:{
     position:"relative",
     marginBottom:10
   },
-  reddot:{
+  redDot:{
     width:8,
     height:8,
     borderRadius:5,
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
   }
 });
 export default function Index() {
-  const [fileUrl,setFileUrl]=useState<string|null>(null) //change to null
+  const [fileUrl,setFileUrl]=useState<string|null>(null)  //fileUrl => Url of the Image shown in Report 
   const { user, signout } = useAuth();
   const [dangerZones,setDangerZones]=useState<number[]>()
   const [plant, setPlant] = useState<plant[]>();
@@ -198,7 +196,10 @@ export default function Index() {
   //   .then(data=>setIp(data.ip))
   //   .catch(err =>console.log(err))
   // },[]);
-  const fetchPlant = async () => {
+
+
+  //utility functions
+  const fetchPlant = async () => {                        //fetch the list of plants for the current user 
     try {
       const response = await databases.listDocuments(
         DATABASE_ID,
@@ -210,7 +211,7 @@ export default function Index() {
       console.error(error);
     }
   };
-  const IfFileExists=async(file_id:string)=>{
+  const IfFileExists=async(file_id:string)=>{                       //check if the File(image in this case) actually exists
     try{
       const file=await storage.getFile(BUCKET_ID,file_id);
       return true
@@ -223,22 +224,22 @@ export default function Index() {
       return false
     }
   }
-  const fetchPlantToday = async () => {
+  const fetchPlantToday = async () => {    //fetch the list of plants watered today 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);                         //setting the threshold time to be midnight (today)
     const todayISO = today.toISOString();
     try {
-      const respons = await databases.listDocuments(
+      const wateredAfterMidnightResponse = await databases.listDocuments(
         DATABASE_ID,
         WATERING_ID,
         [
           Query.equal("user_id", user?.$id ?? ""),
-          Query.greaterThan("last_watered", todayISO),
+          Query.greaterThan("last_watered", todayISO),  //fetch the plants watered after midnight (today)
         ]
       );
-      const watered = respons.documents as zone[];
+      const watered = wateredAfterMidnightResponse.documents as zone[];
       setWateredZone(watered.map((zone) => zone.zone_id));
-      const dangerResponse = await databases.listDocuments(
+      const dangerResponse = await databases.listDocuments(   //fetch the plants whose status might be unhealthy
         DATABASE_ID,
         REPORT_ID,
         [
@@ -246,14 +247,14 @@ export default function Index() {
           Query.equal("status", "possibly unhealthy"),
         ]
       );
-      const danger = dangerResponse.documents as zone[];
+      const danger = dangerResponse.documents as zone[];   
       setDangerZones(danger.map((zone) => zone.zone_id));
       
     } catch (error) {
       console.error(error);
     }
   };
-  const fetchReport=async ()=>{
+  const fetchReport=async ()=>{      //fetch latest weekly report
     try{
       const response = await databases.listDocuments(
         DATABASE_ID,
@@ -272,27 +273,24 @@ export default function Index() {
       else{
         setReport(null)
       }
-      
-      
-      
     }catch (error){
       console.error(error)
     }
   }
 
-  useEffect(() => {
-    if (
+  useEffect(() => {   
+    if (                                            //set selected zone to be zero when a zone is completely emptied
       selectedZone !== 0 &&
-      !plant?.some((p) => p.Plant_zone === selectedZone)
+      !plant?.some((p) => p.Plant_zone === selectedZone)  
     ) {
       setSelectedZone(0);
     }
     
     const checkAndSetFileUrl=async ()=>{
-      if (selectedZone !==0 && user){
+      if (selectedZone !==0 && user){   // no need to fetch the report if All is the selected zone and user is not logged in 
       const file_id=`${user.$id}_${selectedZone}`;
       const exists=await IfFileExists(file_id)
-      console.log(file_id)
+      // console.log(file_id)
       const response=storage.getFileDownload(
         BUCKET_ID,
         file_id
@@ -302,9 +300,9 @@ export default function Index() {
         setFileUrl(null)
         return
       }
-      console.log(response)
+      // console.log(response)
       setFileUrl(response.toString())
-      console.log(fileUrl);
+      // console.log(fileUrl);
     }
   }
   checkAndSetFileUrl();
@@ -317,7 +315,8 @@ export default function Index() {
     }
     setReportIndicator(true)
   },[selectedZone,user])
-  useFocusEffect(
+
+  useFocusEffect(   // always refresh the Plant list (useful after a plant is added )
   useCallback(() => {
     fetchPlant();
     fetchPlantToday();
@@ -328,12 +327,12 @@ export default function Index() {
 );
 
   useEffect(() => {
-    if (user) {
-      const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
+    if (user) {                                         //subscribe to all changes in the database 
+      const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;//subscribe to changes in plant info db
       const plantSubscription = client.subscribe(
         channel,
         (response) => {
-          if (
+          if (                            //subscribe to creation
             response.events.includes(
               "databases.*.collections.*.documents.*.create"
             )
@@ -355,7 +354,7 @@ export default function Index() {
         }
       );
 
-      const wateredChannel = `databases.${DATABASE_ID}.collections.${WATERING_ID}.documents`;
+      const wateredChannel = `databases.${DATABASE_ID}.collections.${WATERING_ID}.documents`; // subscribe to changes in the watered today db
 
       const wateredSubscription = client.subscribe(
         wateredChannel,
@@ -373,23 +372,23 @@ export default function Index() {
       fetchPlant();
       fetchPlantToday();
 
-      return () => {
+      return () => {  //cleanup if the user logs out
         plantSubscription();
         wateredSubscription();
       };
     }
   }, [user]);
 
-  const filteredPlant =
-    selectedZone === 0
+  const filteredPlant =  //change the list of plants shown to the zone choosen
+    selectedZone === 0  
       ? plant
       : plant?.filter((p) => p.Plant_zone === selectedZone);
 
   const zoneList = plant
-    ? Array.from(new Set(plant.map((p) => p.Plant_zone))).sort((a, b) => a - b)
+    ? Array.from(new Set(plant.map((p) => p.Plant_zone))).sort((a, b) => a - b) // sort the list of zones in ascending order if list of plants exists
     : [];
 
-  const handleLeftAction = async (id: string) => {
+  const handleLeftAction = async (id: string) => {        //left action handler for the sliding the plant toast
     try {
       await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
     } catch (error) {
@@ -397,8 +396,8 @@ export default function Index() {
     }
   };
 
-  const handleRightAction = async (id: string) => {
-    const SelectedPlant = filteredPlant?.find((p) => p.$id === id);
+  const handleRightAction = async (id: string) => {                  //right action handler for the sliding the plant toast 
+    const SelectedPlant = filteredPlant?.find((p) => p.$id === id);  
 
     if (!SelectedPlant) return;
 
@@ -439,12 +438,14 @@ export default function Index() {
           {" "}
           Watered {"\n"} Today!!
         </Text>
-      ) : (
+      ) : (<View style={{flexDirection:"column",alignItems:"center"}}>
         <MaterialCommunityIcons
           name="watering-can"
           size={64}
           color="#fff"
         />
+        <Text style={{ color: "#fff", fontWeight: "bold", marginTop: 4 }}>Water  </Text>
+      </View>
       )}
     </View>
   );
@@ -452,15 +453,16 @@ export default function Index() {
   const leftAction = () => (
     <View style={styles.leftAction}>
       <MaterialCommunityIcons name="trash-can-outline" size={32} color="#fff" />
+      <Text style={{ color: "#fff", fontWeight: "bold", marginTop: 4 }}>Delete</Text>
     </View>
   );
 
-  const isZoneWatered = (zone: number) => {
+  const isZoneWatered = (zone: number) => {      //checks if the zone to be watered is already present in the list of zones that have already being watered today
     return wateredZone?.includes(Number(zone));
   };
 
  
-  const activate = async () => {
+  const activate = async () => {     //handles the AI model switching state
     if (!system) {
       if (!Ip) {
         // If IP is missing, navigate to set it
@@ -560,7 +562,7 @@ export default function Index() {
         <Button
           mode="outlined"
           onPress={activate}
-          icon={system ? "lightbulb-on" : "lightbulb-off"}
+          icon={system ? "lightbulb-on" : "lightbulb-off"} // change of icon and color depending on if the system is online or offline
           theme={{
             colors: !system
               ? { outline: "red", primary: "red" }
@@ -580,7 +582,16 @@ export default function Index() {
           Sign Out
         </Button>
       </View>
-
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginVertical: 8}}>
+          <View style={{flexDirection:"row"}}>
+          <MaterialCommunityIcons name="gesture-swipe-left" size={20} color="#888" />
+          <Text style={{ color: "#888", marginHorizontal: 4 }}>Swipe left to water</Text>
+          </View>
+          <View style={{flexDirection:"row"}}>
+          <MaterialCommunityIcons name="gesture-swipe-right" size={20} color="#888" />
+          <Text style={{ color: "#888", marginLeft: 4 }}>Swipe right to delete</Text>
+          </View>
+          </View>
       <View style={{ flex: 1 }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -611,7 +622,7 @@ export default function Index() {
                   {zone}
                 </Button>
                   {dangerZones?.includes(zone)  && 
-                  <View style={styles.reddot}/>
+                  <View style={styles.redDot}/>
                   }
                 </View>
               ))}
@@ -801,8 +812,11 @@ export default function Index() {
               );
             })
           )}
+        
         </ScrollView>
+        
       </View>
+     
     </SafeAreaView>
   );
 }

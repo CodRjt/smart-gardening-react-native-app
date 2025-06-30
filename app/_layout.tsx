@@ -21,7 +21,7 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
   }, [isLoadingUser, user, segments]);
 
 
-  if (isLoadingUser) return null; // Or a loading spinner
+  if (isLoadingUser) return null; 
 
   return <>{children}</>;
 }

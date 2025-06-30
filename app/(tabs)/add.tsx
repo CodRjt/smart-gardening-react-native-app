@@ -9,6 +9,7 @@ import { ID, Query } from "react-native-appwrite";
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, Surface, Text, TextInput, useTheme } from "react-native-paper"; // Import TextInput from react-native-paper
 import { SafeAreaView } from "react-native-safe-area-context";
+import {LinearGradient} from "expo-linear-gradient"
 export default function Add() {
   const router = useRouter()
   const { user } = useAuth()
@@ -86,7 +87,7 @@ export default function Add() {
         quality:1,
       });
       if (!result.canceled && result.assets && result.assets.length>0){
-        setImageUri(result.assets[0].uri);
+        setImageUri(result.assets[0].uri); //set the Image Uri only after checking its exsistence
         
       }
     }
@@ -108,7 +109,10 @@ export default function Add() {
 
 
   return (
-    <SafeAreaView>
+    <SafeAreaView  style={{flex:1}}>
+      <LinearGradient colors={["#e0f7fa", "#e8f5e9", "#fffde7"]}
+     
+      >
     <ScrollView showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>🌱 Add a New Plant</Text>
       <View style={{alignItems:'flex-end'}}>
@@ -117,7 +121,7 @@ export default function Add() {
     <Surface style={styles.formCard}>
     <View style={styles.container}>
       <TextInput
-        label="Name *"
+        label="Nick Name *"
         placeholder="Enter plant name"
         value={name}
         onChangeText={setName}
@@ -168,7 +172,7 @@ export default function Add() {
         placeholderTextColor="#888"
       />
       {serialError && <Text style={{ color: "red" }}> {serialError}</Text>}
-     {serial===1 && <><TextInput
+     {serial===1 && <><TextInput // Watering_interval can only be set for Representative plant ie plant with serial 1
         label="watering_interval"
         placeholder="Enter watering duration in minutes"
         style={styles.input}
@@ -178,7 +182,7 @@ export default function Add() {
         onChangeText={text => setInterval(Number(text))}
       />
       </>}
-     {!imageUri  && <TextInput
+     {!imageUri  && <TextInput  // hide the URL Input tag if Image a local image is selected
         label="URL"
         placeholder="Enter plant image URL" 
         value={url}
@@ -203,14 +207,16 @@ export default function Add() {
         </TouchableOpacity>
         </View>
       )}
-     {name && species && zone && serial &&!serialError && <Button mode="contained" style={{marginTop:10}} onPress={handleSubmit} >
-        Add Plant
+     {name && species && zone && serial &&!serialError && <Button   //show the add button only after the required fields are filled  
+             mode="contained" style={{marginTop:10}} onPress={handleSubmit} > 
+        Add Plant                              
       </Button>
       }
       {error && <Text style={{ color: theme.colors.error }}>{error}</Text>}
     </View>
     </Surface>
 </ScrollView>
+</LinearGradient>
 </SafeAreaView>
   );
 }
@@ -218,7 +224,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 8,
-    backgroundColor: "#f5f5f5"
+ 
   },
   input: {
   marginBottom: 18,

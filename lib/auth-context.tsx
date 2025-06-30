@@ -14,7 +14,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
-    const [isLoadingUser, setIsLoadingUser] = useState(true);
+    const [isLoadingUser, setIsLoadingUser] = useState(true);  // handle the case when the user has began loggin in but has not logged yet
 
     const getUser = async () => {
         try {
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         getUser();
-    }, []);
+    }, []); // get-set the user once during the first render (there will be a first render evertime user changes)
 
     const signin = async (email: string, password: string) => {
         try {
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error("useAuth must be used within an AuthProvider");
+        throw new Error("useAuth must be used within an AuthProvider");  // handling any edge not necessarily needed
     }
     return context;
 }

@@ -5,13 +5,13 @@ import { Button, TextInput } from "react-native-paper";
 export default function initIp() {
     const checkIfIpExsists=async(ip:string):Promise<boolean>=>{
     const controller= new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),3000)
+    const timeout=setTimeout(()=>controller.abort(),3000)  // abort quickly if the IP is invalid , does not make the user to wait for too long
       try{
     const response= await fetch(`http:\\${Ip}:5000`,{
       method:'GET',
-      signal:controller.signal,
+      signal:controller.signal,// controller sends a signal and aborts the fetch request if timeout is reached
     });
-    clearTimeout(timeout)
+    clearTimeout(timeout)//clear the timeout if the request is accepted withing 3 sec
     return response.ok;
   }catch(error){
     clearTimeout(timeout)
@@ -37,7 +37,7 @@ export default function initIp() {
                             // Save the IP address to storage or state management
                             router.replace({
                                 pathname: "/",
-                                params: { ip: Ip },
+                                params: { ip: Ip },// send the ip address as a parameter
                             });
                         } else {
                             console.error("Please enter a valid IP address.");

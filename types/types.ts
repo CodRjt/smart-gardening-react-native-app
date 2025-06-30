@@ -1,5 +1,5 @@
 import { Models } from "react-native-appwrite";
-
+// these are some of the custom types created and used in the project
 export interface plant extends Models.Document{
     user_id:string;
     Plant_name:string;
