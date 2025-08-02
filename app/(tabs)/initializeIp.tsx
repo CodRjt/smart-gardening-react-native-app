@@ -34,11 +34,12 @@ export default function initIp() {
                     onPress={async () => {
                         const response=await checkIfIpExsists(Ip)
                         if (response) {
-                            // Save the IP address to storage or state management
+                            // Saves the IP address to storage or state management
                             router.replace({
                                 pathname: "/",
                                 params: { ip: Ip },
                             });
+                            
                         } else {
                             console.error("Please enter a valid IP address.");
                         }

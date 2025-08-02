@@ -1,35 +1,36 @@
+//import all dependencies 
 import {
+  BUCKET_ID,
   client,
-  storage,
   COLLECTION_ID,
   DATABASE_ID,
   databases,
-  WATERING_ID,
   REPORT_ID,
-  BUCKET_ID
+  storage,
+  WATERING_ID
 } from "@/lib/appwrite";
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-import { useAuth } from "@/lib/auth-context"; 
-import { plant, zone,report } from "@/types/types";
-import { MaterialCommunityIcons } from "@expo/vector-icons"; 
+import { useAuth } from "@/lib/auth-context";
+import { plant, report, zone } from "@/types/types";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { router } from "expo-router";
-import {  useEffect, useRef, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
-  
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Query } from "react-native-appwrite";
 import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
-import { useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+
+
+//creating styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -158,14 +159,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  footer:{
-
-  },
   buttonWrapper:{
     position:"relative",
     marginBottom:10
   },
-  reddot:{
+  redDot:{
     width:8,
     height:8,
     borderRadius:5,
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
   }
 });
 export default function Index() {
-  const [fileUrl,setFileUrl]=useState<string|null>(null) //change to null
+  const [fileUrl,setFileUrl]=useState<string|null>(null)  //fileUrl => ReportImageUrl
   const { user, signout } = useAuth();
   const [dangerZones,setDangerZones]=useState<number[]>()
   const [plant, setPlant] = useState<plant[]>();
@@ -292,7 +290,7 @@ export default function Index() {
       if (selectedZone !==0 && user){
       const file_id=`${user.$id}_${selectedZone}`;
       const exists=await IfFileExists(file_id)
-      console.log(file_id)
+      // console.log(file_id)
       const response=storage.getFileDownload(
         BUCKET_ID,
         file_id
@@ -302,9 +300,9 @@ export default function Index() {
         setFileUrl(null)
         return
       }
-      console.log(response)
+      // console.log(response)
       setFileUrl(response.toString())
-      console.log(fileUrl);
+      // console.log(fileUrl);
     }
   }
   checkAndSetFileUrl();
@@ -439,12 +437,14 @@ export default function Index() {
           {" "}
           Watered {"\n"} Today!!
         </Text>
-      ) : (
+      ) : (<View style={{flexDirection:"column",alignItems:"center"}}>
         <MaterialCommunityIcons
           name="watering-can"
           size={64}
           color="#fff"
         />
+        <Text style={{ color: "#fff", fontWeight: "bold", marginTop: 4 }}>Water  </Text>
+      </View>
       )}
     </View>
   );
@@ -452,6 +452,7 @@ export default function Index() {
   const leftAction = () => (
     <View style={styles.leftAction}>
       <MaterialCommunityIcons name="trash-can-outline" size={32} color="#fff" />
+      <Text style={{ color: "#fff", fontWeight: "bold", marginTop: 4 }}>Delete</Text>
     </View>
   );
 
@@ -580,7 +581,16 @@ export default function Index() {
           Sign Out
         </Button>
       </View>
-
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginVertical: 8}}>
+          <View style={{flexDirection:"row"}}>
+          <MaterialCommunityIcons name="gesture-swipe-left" size={20} color="#888" />
+          <Text style={{ color: "#888", marginHorizontal: 4 }}>Swipe left to water</Text>
+          </View>
+          <View style={{flexDirection:"row"}}>
+          <MaterialCommunityIcons name="gesture-swipe-right" size={20} color="#888" />
+          <Text style={{ color: "#888", marginLeft: 4 }}>Swipe right to delete</Text>
+          </View>
+          </View>
       <View style={{ flex: 1 }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -597,11 +607,11 @@ export default function Index() {
               </Button>
 
               {zoneList.map((zone, key) => (
-                <View>
+                <View key={key}>
                 <Button
                   mode={zone === selectedZone ? "contained" : "outlined"}
                   onPress={() => setSelectedZone(zone)}
-                  key={key}
+                  
                   style={{ height: 40 }}
                   labelStyle={{
                     color:zone===selectedZone?"#fff":"#4e8d7c",
@@ -611,7 +621,7 @@ export default function Index() {
                   {zone}
                 </Button>
                   {dangerZones?.includes(zone)  && 
-                  <View style={styles.reddot}/>
+                  <View style={styles.redDot}/>
                   }
                 </View>
               ))}
@@ -801,8 +811,11 @@ export default function Index() {
               );
             })
           )}
+        
         </ScrollView>
+        
       </View>
+     
     </SafeAreaView>
   );
 }

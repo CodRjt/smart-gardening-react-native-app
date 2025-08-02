@@ -9,6 +9,7 @@ import { ID, Query } from "react-native-appwrite";
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, Surface, Text, TextInput, useTheme } from "react-native-paper"; // Import TextInput from react-native-paper
 import { SafeAreaView } from "react-native-safe-area-context";
+import {LinearGradient} from "expo-linear-gradient"
 export default function Add() {
   const router = useRouter()
   const { user } = useAuth()
@@ -108,7 +109,10 @@ export default function Add() {
 
 
   return (
-    <SafeAreaView>
+    <SafeAreaView  style={{flex:1}}>
+      <LinearGradient colors={["#e0f7fa", "#e8f5e9", "#fffde7"]}
+     
+      >
     <ScrollView showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>🌱 Add a New Plant</Text>
       <View style={{alignItems:'flex-end'}}>
@@ -117,7 +121,7 @@ export default function Add() {
     <Surface style={styles.formCard}>
     <View style={styles.container}>
       <TextInput
-        label="Name *"
+        label="Nick Name *"
         placeholder="Enter plant name"
         value={name}
         onChangeText={setName}
@@ -211,6 +215,7 @@ export default function Add() {
     </View>
     </Surface>
 </ScrollView>
+</LinearGradient>
 </SafeAreaView>
   );
 }
@@ -218,7 +223,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 8,
-    backgroundColor: "#f5f5f5"
+ 
   },
   input: {
   marginBottom: 18,
