@@ -50,7 +50,13 @@ EXPO_PUBLIC_APPWRITE_ENDPOINT=https://your-appwrite.com/v1
 EXPO_PUBLIC_APPWRITE_PROJECT_ID=your-project-id
 APPWRITE_API_KEY=your-api-key
 ```
+### Step 2: Install Dependencies
 
+```bash
+npm install
+# or
+yarn install
+```
 ### Step 3: Set Up Your Raspberry Pi
 
 The Pi runs a Flask server that listens for water commands. You've got two options here:
